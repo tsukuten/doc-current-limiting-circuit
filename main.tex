@@ -1,0 +1,58 @@
+\documentclass[uplatex,a4j,10pt]{jsarticle}
+
+% https://gist.github.com/Terminus-IMRC/73bffe6287cd05ec714aed4b4144907d
+% http://texdoc.net/texmf-dist/doc/latex/circuitikz/circuitikzmanual.pdf
+
+\usepackage{url}
+\usepackage[dvipdfmx]{graphicx}
+\usepackage[dvipdfmx,colorlinks]{hyperref}
+\usepackage{amsmath,amssymb}
+\usepackage{listings}
+\usepackage{subcaption}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{circuitikz}
+\bibliographystyle{tieice}
+
+\fancypagestyle{plain}{%
+  \renewcommand{\headrulewidth}{0pt}%
+  \fancyhf{}%
+  \fancyhead{}%
+  \fancyfoot[C]{\thepage\hspace{1pt} / \pageref*{LastPage}}%
+}
+\pagestyle{plain}
+
+\renewcommand\presectionname{第}
+\renewcommand\postsectionname{章}
+\renewcommand{\lstlistingname}{リスト}
+\renewcommand\descriptionlabel[1]{$\bullet$ \textbf{#1}.}
+
+\title{電流制限回路の種類}
+\author{筑波大学天文研究会 45期 \\ 杉﨑行優}
+\date{}
+
+\begin{document}
+\maketitle
+\thispagestyle{plain}
+\newpage
+\tableofcontents
+\listoffigures
+\listoftables
+\newpage
+
+Hello world! 図\ref{fig:res}\cite{bib:rpi3}
+
+\begin{figure}[htb]
+  \begin{center}
+    \begin{circuitikz}
+      \draw(0,0) to[R=$R_1$,i=$i_1$,v=$v_1$] (4,0);
+    \end{circuitikz}
+    \caption{抵抗器}
+    \label{fig:res}
+  \end{center}
+\end{figure}
+
+\clearpage
+\bibliography{ref}
+
+\end{document}
