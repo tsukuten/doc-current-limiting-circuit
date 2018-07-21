@@ -12,6 +12,7 @@ DOCKER_RUN := $(DOCKER) run --rm -it -u "$(UID):$(GID)" \
 
 all: main.pdf
 
+.PHONY: main.pdf
 main.pdf: main.tex
 	$(DOCKER_RUN) sh -c 'cd /tmp/work/ && latexmk'
 

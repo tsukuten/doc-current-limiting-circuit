@@ -1,11 +1,12 @@
-\documentclass[uplatex,a4j,10pt]{jsarticle}
+\documentclass[uplatex,dvipdfmx,a4j,10pt]{jsarticle}
 
 % https://gist.github.com/Terminus-IMRC/73bffe6287cd05ec714aed4b4144907d
 % http://texdoc.net/texmf-dist/doc/latex/circuitikz/circuitikzmanual.pdf
 
 \usepackage{url}
-\usepackage[dvipdfmx]{graphicx}
-\usepackage[dvipdfmx,colorlinks]{hyperref}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage[colorlinks]{hyperref}
 \usepackage{amsmath,amssymb}
 \usepackage{listings}
 \usepackage{subcaption}
@@ -27,7 +28,7 @@
 \renewcommand{\lstlistingname}{リスト}
 \renewcommand\descriptionlabel[1]{$\bullet$ \textbf{#1}.}
 
-\title{電流制限回路の種類}
+\title{電流制限回路}
 \author{筑波大学天文研究会 45期 \\ 杉﨑行優}
 \date{}
 
@@ -40,17 +41,116 @@
 \listoftables
 \newpage
 
-Hello world! 図\ref{fig:res}\cite{bib:rpi3}
+\section{電流制限回路}
+
+本章では、抵抗器および半導体素子を用いた電流制限回路を紹介する。
+なお、簡単のため、FETとしてはN-ch FET、トランジスタとしてはNPNトランジスタを用い、
+ローサイドにおける電流制限回路のみを示した。
+どの回路もP-ch FETまたはPNPトランジスタを用いてハイサイドの回路に書き換えられることに
+注意していただきたい。
+
+
+\subsection{抵抗器を用いた電流制限回路}
+負荷に直列に抵抗器を接続したとき (図\ref{fig:cur-limit-res})、
+負荷に流れる電流の最大値$I_L$は
+\begin{equation*}
+  I_L = V_{DD} / R_f
+\end{equation*}
+である。また、抵抗器における最大損失$P_{R_f}$は
+\begin{equation*}
+  P_{R_f} = I_L R_f
+\end{equation*}
+である。
 
 \begin{figure}[htb]
   \begin{center}
-    \begin{circuitikz}
-      \draw(0,0) to[R=$R_1$,i=$i_1$,v=$v_1$] (4,0);
+    \begin{circuitikz} \draw
+      (0,0) node[vcc]{$V_{DD}$}
+      (0,0) to[twoport,t=負荷,i=$I_L$]
+      (0,-2) to[R=$R_f$]
+      (0,-4) node[ground]{}
+      ;
     \end{circuitikz}
-    \caption{抵抗器}
-    \label{fig:res}
+    \caption{抵抗器を用いた電流制限回路}
+    \label{fig:cur-limit-res}
   \end{center}
 \end{figure}
+
+\begin{itemize}
+  \item 利点
+  \begin{itemize}
+    \item 部品数が少ない。
+  \end{itemize}
+  \item 欠点
+  \begin{itemize}
+    \item 抵抗器における損失が死ぬほど大きい。
+  \end{itemize}
+\end{itemize}
+
+
+\subsection{FETを用いた電流制限回路}
+FETには、$V_{DS}$が十分大きいとき、$I_D$が$V_{GS}$によっておおよそ定まるという性質がある。
+例として、2N7000 (N-ch FET) の$I_D - V_{DS}$曲線を図\ref{fig:2n7000-id-vds}に示す。
+図より、$V_{GS}=3.0V$のとき最大$I_D=0.1A$、
+$V_{GS}=4.0V$のとき最大$I_D=0.4A$となることがわかる。
+
+実際には図\ref{fig:cur-limit-fet}のような回路を用いる。
+ここで、$V_{GS}=R_{GS} I_L$であるから$R_f=V_{GS}/I_L$である。
+
+\begin{figure}[htb]
+  \begin{subfigure}{.7\textwidth}
+    \begin{center}
+      \includegraphics[width=.95\linewidth]{2n7000-id-vds.png}
+      \caption{2N7000の$I_D - V_{DS}$曲線}
+      \label{fig:2n7000-id-vds}
+    \end{center}
+  \end{subfigure}%
+  \begin{subfigure}{.3\textwidth}
+    \begin{center}
+      \begin{circuitikz} \draw
+        (0,0) node[nigfete] (nfet) {}
+        (nfet.G) node[anchor=south] {G}
+        (nfet.D) node[anchor=east] {D}
+        (nfet.S) node[anchor=east] {S}
+        (nfet.S) to[open,v=$V_{DS}$] (nfet.D)
+        (nfet.G) --
+        (-2,-0.25) --
+        (-2,-4) --
+        (0,-4) to[R=$R_{GS}$,v=$V_{GS}$]
+        (nfet.S)
+        (0,-4) node[circ] {} |- (0,-5) node[vee]{}
+        (nfet.D) --
+        (0,2) to[twoport,t=負荷,i<=$I_L$] (0,4) -- (0,4.5) node[vcc]{}
+        ;
+      \end{circuitikz}
+      \caption{FETを用いた電流制限回路}
+      \label{fig:cur-limit-fet}
+    \end{center}
+  \end{subfigure}
+  \caption{FETを用いた電流制限回路}
+\end{figure}
+
+\begin{itemize}
+  \item 利点
+  \begin{itemize}
+    \item 部品数が少ない。
+    \item FETのオン抵抗$R_{DS(on)}$は数$\Omega$から数十m$\Omega$ほどであり、
+          FETにおける損失$P_D=R_{DS(on)}I_L^2$が小さい。
+    \item FETは負の温度依存性を持つ。すなわち、損失によりFETが発熱しても
+          電流値は減少する (安全な) 方向に変化する。
+  \end{itemize}
+  \item 欠点
+  \begin{itemize}
+    \item $I_D - V_{DS}$は、特に$V_{DS}$が大きい領域では製品間でかなりバラつきがある。
+    \item オン抵抗が小さいFETは$I_D$がかなり大きくないと飽和しないか、
+          SOA (Safe Operating Area) の範囲内では飽和しない。
+  \end{itemize}
+\end{itemize}
+
+\subsection{トランジスタの$V_{BE}$を利用した電流制限回路}
+\subsection{センス抵抗とトランジスタを用いた電流制限回路}
+\subsection{センス抵抗とオペアンプを用いた電流制限回路}
+
 
 \clearpage
 \bibliography{ref}
